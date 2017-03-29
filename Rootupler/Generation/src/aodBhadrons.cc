@@ -49,7 +49,7 @@ private:
   TLorentzVector q_p4;
   Int_t          q_id;
   UInt_t         q_status;
-  UInt_t         nb;
+  UInt_t         nb, ndau;
   UInt_t         nprun, npack, nc, ns, npr, nka, npi, nmu, nel, nga, nother;
   TTree          *gen_tree, *counter_tree;
 
@@ -70,6 +70,7 @@ aodBhadrons::aodBhadrons(const edm::ParameterSet& p) {
    gen_tree->Branch("q_id",     &q_id,            "q_id/I");
    gen_tree->Branch("q_status", &q_status,        "q_status/i");
    gen_tree->Branch("nb",       &nb,              "nb/i");
+   gen_tree->Branch("ndau",       &ndau,              "ndau/i");
 
    counter_tree = fs->make<TTree>("CounterTree","Tree of Counters");
    counter_tree->Branch("nb",       &nb,              "nb/i");
@@ -151,7 +152,7 @@ void aodBhadrons::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
    edm::Handle<reco::GenParticleCollection > gen_;
    iEvent.getByToken(genGenToken_,gen_);
 
-   nb = nprun = npack = 0;
+   nb = nprun = npack = ndau = 0;
    nc = ns = npr = nka = npi = nmu = nel = nga = nother = 0;
    if (gen_.isValid()) {
       nprun = gen_->size();
@@ -162,11 +163,11 @@ void aodBhadrons::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
          const reco::Candidate * bMother = bHadron->mother(0);
          int pdg_mother =  (bMother != nullptr) ? bMother->pdgId() : -1; 
          b_id = bHadron->pdgId();
-         uint ndau = bHadron->numberOfDaughters();
+         ndau = bHadron->numberOfDaughters();
          std::cout << b_id << "," << IsQHadron(b_id,5) << "," << pdg_mother << "," 
                    << IsQHadron(pdg_mother,5) << "," << HasQDaughters(bHadron,5) << "," << bHadron->status() << "," << ndau << std::endl;
-         if (IsQHadron(b_id,5) && !HasQDaughters(bHadron,5) && bHadron->status() == 2 && ndau > 0) {
-            
+         if (IsQHadron(b_id,5) && !HasQDaughters(bHadron,5) && bHadron->status() == 2) {
+            if (ndau < 1) std::cout <<  b_id << " has stable daughters," << std::endl;
             b_p4.SetPtEtaPhiM(bHadron->pt(),bHadron->eta(),bHadron->phi(),bHadron->mass());
             nb++;
             q_id = bHadron->pdgId()>0 ? 5 : -5;
@@ -175,7 +176,7 @@ void aodBhadrons::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
                b_pvtx.SetXYZ(bMother->vx(),bMother->vy(),bMother->vz());
                q_id *= -1;
             }  else b_pvtx.SetXYZ(bHadron->vx(),bHadron->vy(),bHadron->vz());
-            const reco::Candidate * bDaugh = bHadron->daughter(0);
+            const reco::Candidate * bDaugh = (ndau>0) ? bHadron->daughter(0): bHadron;
             b_dvtx.SetXYZ(bDaugh->vx(),bDaugh->vy(),bDaugh->vz());
             b_ct = GetLifetime(b_p4,b_pvtx,b_dvtx);
             const reco::Candidate *q = GetAncestor(bHadron,q_id);
