@@ -50,7 +50,7 @@ private:
   TLorentzVector q_p4;
   Int_t          q_id;
   UInt_t         q_status;
-  UInt_t         nb;
+  UInt_t         nb,ndau;
   UInt_t         nprun, npack, nc, ns, npr, nka, npi, nmu, nel, nga, nother;
   TTree          *gen_tree, *counter_tree;
 
@@ -72,6 +72,7 @@ miniaodBhadrons::miniaodBhadrons(const edm::ParameterSet& p) {
    gen_tree->Branch("q_id",     &q_id,            "q_id/I");
    gen_tree->Branch("q_status", &q_status,        "q_status/i");
    gen_tree->Branch("nb",       &nb,              "nb/i");
+   gen_tree->Branch("ndau",     &ndau,            "ndau/i");
 
    counter_tree = fs->make<TTree>("CounterTree","Tree of Counters");
    counter_tree->Branch("nb",       &nb,              "nb/i");
@@ -159,7 +160,7 @@ void miniaodBhadrons::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    edm::Handle<pat::PackedGenParticleCollection > packed;
    iEvent.getByToken(packedGenToken_,packed);
 
-   nb = nprun = npack = 0;
+   nb = nprun = npack = ndau = 0;
    nc = ns = npr = nka = npi = nmu = nel = nga = nother = 0;
    if (packed.isValid() && pruned.isValid()) {
       nprun = pruned->size();
@@ -169,11 +170,11 @@ void miniaodBhadrons::analyze(const edm::Event& iEvent, const edm::EventSetup& i
          const reco::Candidate * bMother = bHadron->mother(0);
          int pdg_mother =  (bMother != nullptr) ? bMother->pdgId() : -1; 
          b_id = bHadron->pdgId();
-         uint ndau = bHadron->numberOfDaughters();
+         ndau = bHadron->numberOfDaughters();
          std::cout << b_id << "," << IsQHadron(b_id,5) << "," << pdg_mother << "," 
                    << IsQHadron(pdg_mother,5) << "," << HasQDaughters(bHadron,5) << "," << bHadron->status() << "," << ndau << std::endl;
-         if (IsQHadron(b_id,5) && !HasQDaughters(bHadron,5) && bHadron->status() == 2 && ndau > 0) {
-            
+         if (IsQHadron(b_id,5) && !HasQDaughters(bHadron,5) && bHadron->status() == 2) {
+            if (ndau < 1) std::cout <<  b_id << " has stable daughters," << std::endl; 
             b_p4.SetPtEtaPhiM(bHadron->pt(),bHadron->eta(),bHadron->phi(),bHadron->mass());
             nb++;
             q_id = bHadron->pdgId()>0 ? 5 : -5;
@@ -182,9 +183,11 @@ void miniaodBhadrons::analyze(const edm::Event& iEvent, const edm::EventSetup& i
                b_pvtx.SetXYZ(bMother->vx(),bMother->vy(),bMother->vz());
                q_id *= -1;
             }  else b_pvtx.SetXYZ(bHadron->vx(),bHadron->vy(),bHadron->vz());
-            const reco::Candidate * bDaugh = bHadron->daughter(0);
+
+            const reco::Candidate * bDaugh = (ndau>0) ? bHadron->daughter(0): bHadron;
             b_dvtx.SetXYZ(bDaugh->vx(),bDaugh->vy(),bDaugh->vz());
             b_ct = GetLifetime(b_p4,b_pvtx,b_dvtx);
+
             const reco::Candidate *q = GetAncestor(bHadron,q_id);
             q_status = 0;
             q_p4.SetPtEtaPhiM(0.,0.,0.,0.);
@@ -214,10 +217,12 @@ void miniaodBhadrons::analyze(const edm::Event& iEvent, const edm::EventSetup& i
                   }
                }
             }
+            if (ndau<1) std::cout << "+missing decay: " << b_id << " -> ";
             for (size_t k=0; k<packed->size(); k++) {
                const reco::Candidate * motherInPrunedCollection = (*packed)[k].mother(0);
                int stable_id = abs((*packed)[k].pdgId());
                if (motherInPrunedCollection != nullptr && isAncestor(bHadron,motherInPrunedCollection)) {
+                  if (ndau<1) std::cout << (*packed)[k].pdgId() << " ";
                   switch (stable_id) {
                      case 11:   nel++;    break;
                      case 13:   nmu++;    break;
@@ -229,7 +234,8 @@ void miniaodBhadrons::analyze(const edm::Event& iEvent, const edm::EventSetup& i
                   }
                }
             }
-            std::cout << "***" << bHadron->pdgId() << "," << b_mixed << "," << q_id << "," << nb << " " << nmu << "," << nc << "," << ns << std::endl;
+            if (ndau<1) std::cout << std::endl;
+            std::cout << "***" << bHadron->pdgId() << "," << b_mixed << "," << q_id << "," << nb << " " << nmu << "," << nc << "," << ns << ",  " << b_ct << std::endl;
             gen_tree->Fill();
          }
       } 
