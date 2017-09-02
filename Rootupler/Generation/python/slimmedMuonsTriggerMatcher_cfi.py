@@ -23,6 +23,8 @@ PATmuonMatchHLTL2   = PATmuonTriggerMatchHLT.clone(matchedCuts = cms.string('col
                                                    maxDeltaR = 0.3, maxDPtRel = 10.0)       #maxDeltaR Changed accordingly to Zoltan tuning. It was: 1.2
 PATmuonMatchHLTL3   = PATmuonTriggerMatchHLT.clone(matchedCuts = cms.string('coll("hltIterL3FromL2MuonCandidates")'), 
                                                    maxDeltaR = 0.1, maxDPtRel = 10.0)       #maxDeltaR Changed accordingly to Zoltan tuning. It was: 0.5
+PATmuonMatchHLTL3v2 = PATmuonTriggerMatchHLT.clone(matchedCuts = cms.string('coll("hltIterL3MuonCandidates")'),
+		                                   maxDeltaR = 0.1, maxDPtRel = 10.0)       #maxDeltaR Changed accordingly to Zoltan tuning. It was: 0.5
 PATmuonMatchHLTL3T  = PATmuonTriggerMatchHLT.clone(matchedCuts = cms.string('coll("hltGlbTrkMuonCands")'),  
                                                    maxDeltaR = 0.1, maxDPtRel = 10.0)       #maxDeltaR Changed accordingly to Zoltan tuning. It was: 0.5
 PATmuonMatchHLTTkMu = PATmuonTriggerMatchHLT.clone(matchedCuts = cms.string('coll("hltHighPtTkMuonCands")'),  
@@ -31,6 +33,7 @@ PATmuonMatchHLTTkMu = PATmuonTriggerMatchHLT.clone(matchedCuts = cms.string('col
 slimmedMuonsTriggerMatchers1Mu = cms.Sequence(
       PATmuonMatchHLTL2 +
       PATmuonMatchHLTL3 +
+      PATmuonMatchHLTL3v2 +
       PATmuonMatchHLTL3T +
       PATmuonMatchHLTTkMu
 )
@@ -38,6 +41,7 @@ slimmedMuonsTriggerMatchers1Mu = cms.Sequence(
 slimmedMuonsTriggerMatchers1MuInputTags = [
     cms.InputTag('PATmuonMatchHLTL2'),
     cms.InputTag('PATmuonMatchHLTL3'),
+    cms.InputTag('PATmuonMatchHLTL3v2'),
     cms.InputTag('PATmuonMatchHLTL3T'),
     cms.InputTag('PATmuonMatchHLTTkMu'),
 ]
