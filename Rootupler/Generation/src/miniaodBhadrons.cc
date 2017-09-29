@@ -28,11 +28,11 @@
 class miniaodBhadrons : public edm::EDAnalyzer {
 public:
   explicit miniaodBhadrons(const edm::ParameterSet&);
-  ~miniaodBhadrons() {};
+  ~miniaodBhadrons() override {};
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
   
 private:
-  virtual void           analyze(const edm::Event&, const edm::EventSetup&);
+  void           analyze(const edm::Event&, const edm::EventSetup&) override;
   bool                   isAncestor(const reco::Candidate*, const reco::Candidate*);
   bool                   isAncestor(int, const reco::Candidate*);
   const reco::Candidate *GetAncestor(const reco::Candidate *, int);

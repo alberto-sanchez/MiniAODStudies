@@ -19,11 +19,11 @@
 class MiniAODDumpPrunned : public edm::EDAnalyzer {
    public:
       explicit MiniAODDumpPrunned (const edm::ParameterSet&);
-      ~MiniAODDumpPrunned() {};
+      ~MiniAODDumpPrunned() override {};
       bool isAncestor(const reco::Candidate * ancestor, const reco::Candidate * particle);
 
    private:
-      virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+      void analyze(const edm::Event&, const edm::EventSetup&) override;
 
       edm::EDGetTokenT<reco::GenParticleCollection > prunedGenToken_;
       edm::EDGetTokenT<pat::PackedGenParticleCollection > packedGenToken_;

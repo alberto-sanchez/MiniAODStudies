@@ -18,10 +18,10 @@
 class PackedCandAnalyzer : public edm::EDAnalyzer {
    public:
       explicit PackedCandAnalyzer(const edm::ParameterSet&);
-      ~PackedCandAnalyzer() {}
+      ~PackedCandAnalyzer() override {}
 
    private:
-      virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+      void analyze(const edm::Event&, const edm::EventSetup&) override;
 
       edm::EDGetTokenT<pat::ElectronCollection> electronToken_;
       edm::EDGetTokenT<pat::MuonCollection> muonToken_;
@@ -89,13 +89,13 @@ void PackedCandAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 	const pat::TriggerObjectStandAloneCollection muHLTMatches6 = (dynamic_cast<const pat::Muon*>(lep))->triggerObjectMatchesByFilter("hltDisplacedmumuFilterDimuon12Upsilons");
 	const pat::TriggerObjectStandAloneCollection muHLTMatches7 = (dynamic_cast<const pat::Muon*>(lep))->triggerObjectMatchesByFilter("hltDisplacedmumuFilterDimuon14PhiBarrelnoCow");
 
-	if (muHLTMatches1.size() > 0) matched += 1;
-	if (muHLTMatches2.size() > 0) matched += 2;
-	if (muHLTMatches3.size() > 0) matched += 4;
-	if (muHLTMatches4.size() > 0) matched += 8;
-	if (muHLTMatches5.size() > 0) matched += 16;
-	if (muHLTMatches6.size() > 0) matched += 32;
-	if (muHLTMatches7.size() > 0) matched += 64;
+	if (!muHLTMatches1.empty()) matched += 1;
+	if (!muHLTMatches2.empty()) matched += 2;
+	if (!muHLTMatches3.empty()) matched += 4;
+	if (!muHLTMatches4.empty()) matched += 8;
+	if (!muHLTMatches5.empty()) matched += 16;
+	if (!muHLTMatches6.empty()) matched += 32;
+	if (!muHLTMatches7.empty()) matched += 64;
 
         printf("*** %-8s of pt %6.1f, eta %+4.2f, phi %+4.2f : relIso = %5.2f => matched = %d\n",
                     abs(lep->pdgId())==13 ? "muon" : "electron",

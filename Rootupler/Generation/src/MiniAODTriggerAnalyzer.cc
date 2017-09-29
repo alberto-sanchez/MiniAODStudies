@@ -18,10 +18,10 @@
 class MiniAODTriggerAnalyzer : public edm::EDAnalyzer {
    public:
       explicit MiniAODTriggerAnalyzer(const edm::ParameterSet&);
-      ~MiniAODTriggerAnalyzer() {}
+      ~MiniAODTriggerAnalyzer() override {}
 
    private:
-      virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+      void analyze(const edm::Event&, const edm::EventSetup&) override;
 
       edm::EDGetTokenT<edm::TriggerResults> triggerBits_;
       edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjects_;
